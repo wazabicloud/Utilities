@@ -1,7 +1,34 @@
+from datetime import time
 import pandas as pd
 import numpy as np
 
-def extract_complete(filename):
+def _convert_time(time_string: str):
+    """
+    Internal function to convert timestamps
+    """
+
+    hours = float(time_string.split(":")[0])
+    minutes = float(time_string.split(":")[1])
+    seconds = float(time_string.split(":")[2])
+
+    total_time = 3600*hours + 60*minutes + seconds
+
+    return total_time
+
+def _convert_time(time_string: str):
+    """
+    Internal function to convert dates
+    """
+
+    hours = float(time_string.split(":")[0])
+    minutes = float(time_string.split(":")[1])
+    seconds = float(time_string.split(":")[2])
+
+    total_time = 3600*hours + 60*minutes + seconds
+
+    return total_time
+
+def extract_complete(file_path: str):
     """
     Extracts data from a single file and organizes it
     in three different dataframes (cycle, step and datapoints).
@@ -16,7 +43,7 @@ def extract_complete(filename):
     file_path : str
         The path of the file from which the data must be extracted.
     """
-    with open(filename, "r") as handle:
+    with open(file_path, "r") as handle:
         raw_input = handle.readlines()
 
     for i in range(len(raw_input)):
@@ -54,6 +81,16 @@ def extract_complete(filename):
     cycles_df.drop([0], inplace=True)
     cycles_df.drop(columns=["Header"], inplace=True)
 
+    # Fixing time
+    cycles_df["Plat_Time(h:min:s.ms)"] = cycles_df["Plat_Time(h:min:s.ms)"].apply(lambda x: _convert_time(x))
+    cycles_df["Charge Time(h:min:s.ms)"] = cycles_df["Charge Time(h:min:s.ms)"].apply(lambda x: _convert_time(x))
+    cycles_df["Discharge Time(h:min:s.ms)"] = cycles_df["Discharge Time(h:min:s.ms)"].apply(lambda x: _convert_time(x))
+    cycles_df.rename(columns={
+        "Plat_Time(h:min:s.ms)": "Plat_Time(s)",
+        "Charge Time(h:min:s.ms)": "Charge Time(s)",
+        "Discharge Time(h:min:s.ms)": "Discharge Time(s)"
+    }, inplace=True)
+
     # STEPS DATA
 
     steps_df = df.loc[df[1] == "Step", :].copy()
@@ -64,6 +101,12 @@ def extract_complete(filename):
     new_cols = df.loc[1,:].dropna()
     steps_df.columns=new_cols
     steps_df.drop(columns=["Header"], inplace=True)
+
+    # Fixing time
+    steps_df["Step Time(h:min:s.ms)"] = steps_df["Step Time(h:min:s.ms)"].apply(lambda x: _convert_time(x))
+    steps_df.rename(columns={
+        "Step Time(h:min:s.ms)": "Step Duration(s)"
+    }, inplace=True)
 
     # DATAPOINTS
 
@@ -77,15 +120,21 @@ def extract_complete(filename):
 
     datapoints_df.dropna(axis=1, how="all", inplace=True)
 
+    # Fixing time
+    datapoints_df["Time(h:min:s.ms)"] = datapoints_df["Time(h:min:s.ms)"].apply(lambda x: _convert_time(x))
+    datapoints_df.rename(columns={
+        "Time(h:min:s.ms)": "Relative Time(s)"
+    }, inplace=True)
+
     final_dict = {
-        cycles_df: cycles_df,
-        steps_df: steps_df,
-        datapoints_df: datapoints_df
+        "cycles_df": cycles_df,
+        "steps_df": steps_df,
+        "datapoints_df": datapoints_df
     }
 
     return final_dict
 
-def extract_cycles(filename):
+def extract_cycles(file_path: str):
     """
     Extracts data from a single file and filters out only
     the lines involving the cycles data.
@@ -96,9 +145,9 @@ def extract_cycles(filename):
         The path of the file from which the data must be extracted.
     """
 
-    return extract_complete(filename)["cycles_df"]
+    return extract_complete(file_path)["cycles_df"]
 
-def extract_steps(filename):
+def extract_steps(file_path: str):
     """
     Extracts data from a single file and filters out only
     the lines involving the steps data.
@@ -109,9 +158,9 @@ def extract_steps(filename):
         The path of the file from which the data must be extracted.
     """
 
-    return extract_complete(filename)["steps_df"]
+    return extract_complete(file_path)["steps_df"]
 
-def extract_datapoints(filename):
+def extract_datapoints(file_path: str):
     """
     Extracts data from a single file and filters out only
     the individual datapoints.
@@ -122,4 +171,4 @@ def extract_datapoints(filename):
         The path of the file from which the data must be extracted.
     """
 
-    return extract_complete(filename)["datapoints_df"]
+    return extract_complete(file_path)["datapoints_df"]

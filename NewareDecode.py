@@ -55,7 +55,7 @@ def extract_complete(file_path: str):
 
     # Filtering data according to which dataframe it belongs to:
 
-    # Column names
+    # Columns of the single dataframes
     df.loc[0:2, 1] = "Header"
 
     # Cycles
@@ -67,18 +67,20 @@ def extract_complete(file_path: str):
     # Single data
     df.loc[df[1].isna(), 1] = "Data"
 
+    # Once the data is sorted I can fill the cycle and step columns and remove the rest
+    df.loc[3:, [0, 2]] = df.loc[3:, [0, 2]].ffill()
+    df.loc[[1,2], 0] = "Cycle ID"
+    df.loc[2, 2] = "Step ID"
     df.dropna(axis=1, how="all", inplace=True)
 
     # CYCLES DATA
-
     cycles_df = df.loc[df[1] == "Cycle", :].copy()
     cycles_df.reset_index(drop=True, inplace=True)
     cycles_df.dropna(axis=1, how="all", inplace=True)
 
     # Renaming columns
-    new_cols = df.loc[0,:].dropna()
+    new_cols = df.loc[0,:].dropna().values
     cycles_df.columns=new_cols
-    cycles_df.drop([0], inplace=True)
     cycles_df.drop(columns=["Header"], inplace=True)
 
     # Fixing time
@@ -117,7 +119,6 @@ def extract_complete(file_path: str):
     new_cols = df.loc[2,:]
     datapoints_df.columns=new_cols
     datapoints_df.drop(columns=["Header"], inplace=True)
-
     datapoints_df.dropna(axis=1, how="all", inplace=True)
 
     # Fixing time
@@ -126,12 +127,33 @@ def extract_complete(file_path: str):
         "Time(h:min:s.ms)": "Relative Time(s)"
     }, inplace=True)
 
+    # Conversion to numeric
+    cycles_df["Cycle ID"] = pd.to_numeric(cycles_df["Cycle ID"], errors="ignore")
+
+    steps_df["Step ID"] = pd.to_numeric(steps_df["Step ID"], errors="ignore")
+    steps_df["Cycle ID"] = pd.to_numeric(steps_df["Cycle ID"], errors="ignore")
+
+    datapoints_df["Step ID"] = pd.to_numeric(datapoints_df["Step ID"], errors="ignore")
+    datapoints_df["Cycle ID"] = pd.to_numeric(datapoints_df["Cycle ID"], errors="ignore")
+
+    # Adding the relative time to each df
+    steps_df.loc[0, "Begin Time(s)"] = 0.0
+    steps_df.loc[1: , "Begin Time(s)"] = steps_df.iloc[:-1]["Step Duration(s)"].cumsum().values
+
+    for i in cycles_df["Cycle ID"].unique():
+        cycles_df.loc[cycles_df["Cycle ID"] == i, "Step Duration(s)"] = steps_df.loc[steps_df["Cycle ID"] == i, "Step Duration(s)"].sum()
+
+    cycles_df.loc[0, "Begin Time(s)"] = 0.0
+    cycles_df.loc[1: , "Begin Time(s)"] = cycles_df.iloc[:-1]["Step Duration(s)"].cumsum().values
+
+    for i in datapoints_df["Step ID"].unique():
+        datapoints_df.loc[(datapoints_df["Step ID"] == i), "Begin Time(s)"] = datapoints_df.loc[(datapoints_df["Step ID"] == i), "Relative Time(s)"] + steps_df.loc[steps_df["Step ID"] == i, "Begin Time(s)"].sum()
+
     final_dict = {
         "cycles_df": cycles_df,
         "steps_df": steps_df,
         "datapoints_df": datapoints_df
     }
-
     return final_dict
 
 def extract_cycles(file_path: str):
@@ -172,3 +194,6 @@ def extract_datapoints(file_path: str):
     """
 
     return extract_complete(file_path)["datapoints_df"]
+
+if __name__ == "__main__":
+    extract_complete("test.csv")

@@ -47,7 +47,7 @@ def Convert():
     root.deiconify()
     root.lift()
     root.focus_force()
-    file_list = tk.filedialog.askopenfilenames(parent = root, title = "Choose CV files", filetypes = [("CSV files", ".csv")])
+    file_list = tk.filedialog.askopenfilenames(parent = root, title = "Choose Admiral EIS files", filetypes = [("CSV files", ".csv")])
 
     if len(file_list) == 0:
         print("No file was selected!")

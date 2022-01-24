@@ -9,6 +9,7 @@ commands_dict = {
     "1": "Neware Extractor",
     "2": "EIS to Bio-logic",
     "3": "Supercap analysis",
+    "4": "Plate and strip",
     # "H": "Help",
     "Q": "Quit"
 }

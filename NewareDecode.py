@@ -85,13 +85,17 @@ def _extract_csv(raw_input):
     }, inplace=True)
 
     # Conversion to numeric
-    cycles_df["Cycle ID"] = pd.to_numeric(cycles_df["Cycle ID"], errors="ignore")
 
-    steps_df["Step ID"] = pd.to_numeric(steps_df["Step ID"], errors="ignore")
-    steps_df["Cycle ID"] = pd.to_numeric(steps_df["Cycle ID"], errors="ignore")
+    cycles_df = cycles_df.apply(pd.to_numeric, errors = "ignore")
+    steps_df = steps_df.apply(pd.to_numeric, errors = "ignore")
+    datapoints_df = datapoints_df.apply(pd.to_numeric, errors = "ignore")
+    # cycles_df["Cycle ID"] = pd.to_numeric(cycles_df["Cycle ID"], errors="ignore")
 
-    datapoints_df["Step ID"] = pd.to_numeric(datapoints_df["Step ID"], errors="ignore")
-    datapoints_df["Cycle ID"] = pd.to_numeric(datapoints_df["Cycle ID"], errors="ignore")
+    # steps_df["Step ID"] = pd.to_numeric(steps_df["Step ID"], errors="ignore")
+    # steps_df["Cycle ID"] = pd.to_numeric(steps_df["Cycle ID"], errors="ignore")
+
+    # datapoints_df["Step ID"] = pd.to_numeric(datapoints_df["Step ID"], errors="ignore")
+    # datapoints_df["Cycle ID"] = pd.to_numeric(datapoints_df["Cycle ID"], errors="ignore")
 
     # Adding the relative time to each df
     steps_df.loc[0, "Begin Time(s)"] = 0.0

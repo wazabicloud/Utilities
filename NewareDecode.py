@@ -1,51 +1,8 @@
-from datetime import time
 import pandas as pd
 import numpy as np
+import re
 
-def _convert_time(time_string: str):
-    """
-    Internal function to convert timestamps
-    """
-
-    hours = float(time_string.split(":")[0])
-    minutes = float(time_string.split(":")[1])
-    seconds = float(time_string.split(":")[2])
-
-    total_time = 3600*hours + 60*minutes + seconds
-
-    return total_time
-
-def _convert_time(time_string: str):
-    """
-    Internal function to convert dates
-    """
-
-    hours = float(time_string.split(":")[0])
-    minutes = float(time_string.split(":")[1])
-    seconds = float(time_string.split(":")[2])
-
-    total_time = 3600*hours + 60*minutes + seconds
-
-    return total_time
-
-def extract_complete(file_path: str):
-    """
-    Extracts data from a single file and organizes it
-    in three different dataframes (cycle, step and datapoints).
-
-    Returns a dictionary with three elements:
-    cycles_df: dataframe with data related to the whole cycles.
-    steps_df: dataframe with data related to the individual steps.
-    datapoints_df: dataframe with the single acquisitions.
-
-    Parameters
-    ----------
-    file_path : str
-        The path of the file from which the data must be extracted.
-    """
-    with open(file_path, "r") as handle:
-        raw_input = handle.readlines()
-
+def _extract_csv(raw_input):
     for i in range(len(raw_input)):
         raw_input[i] = raw_input[i].replace("\xb0", "°").replace("\t", ",").replace("\n", "")
         raw_input[i] = raw_input[i].split(",")
@@ -154,6 +111,76 @@ def extract_complete(file_path: str):
         "steps_df": steps_df,
         "datapoints_df": datapoints_df
     }
+
+    return final_dict
+
+def _prepare_txt(raw_input):
+
+    for i, row in enumerate(raw_input):
+        raw_input[i] = re.sub(r'(\S)\t+', r'\1,\t', raw_input[i])
+
+        if raw_input[i].startswith("\t\t\t\t\t\t"):
+            raw_input[i] = raw_input[i].replace("\t\t\t\t\t\t", ",,\t", 1)
+        elif raw_input[i].startswith("\t\t\t"):
+            raw_input[i] = raw_input[i].replace("\t\t\t", ",\t", 1)
+
+    return raw_input
+
+def _convert_time(time_string: str):
+    """
+    Internal function to convert timestamps
+    """
+
+    hours = float(time_string.split(":")[0])
+    minutes = float(time_string.split(":")[1])
+    seconds = float(time_string.split(":")[2])
+
+    total_time = 3600*hours + 60*minutes + seconds
+
+    return total_time
+
+def _convert_time(time_string: str):
+    """
+    Internal function to convert dates
+    """
+
+    hours = float(time_string.split(":")[0])
+    minutes = float(time_string.split(":")[1])
+    seconds = float(time_string.split(":")[2])
+
+    total_time = 3600*hours + 60*minutes + seconds
+
+    return total_time
+
+def extract_complete(file_path: str):
+    """
+    Extracts data from a single file and organizes it
+    in three different dataframes (cycle, step and datapoints).
+
+    Returns a dictionary with three elements:
+    cycles_df: dataframe with data related to the whole cycles.
+    steps_df: dataframe with data related to the individual steps.
+    datapoints_df: dataframe with the single acquisitions.
+
+    Parameters
+    ----------
+    file_path : str
+        The path of the file from which the data must be extracted.
+    """
+    with open(file_path, "r") as handle:
+        raw_input = handle.readlines()
+
+    if ".csv" in file_path:
+        with open(file_path, "r") as handle:
+            raw_input = handle.readlines()
+
+        final_dict = _extract_csv(raw_input)
+    elif ".txt" in file_path:
+        with open(file_path, "r") as handle:
+            raw_input = handle.readlines()
+
+        final_dict = _extract_csv(_prepare_txt(raw_input))
+
     return final_dict
 
 def extract_cycles(file_path: str):
@@ -196,4 +223,4 @@ def extract_datapoints(file_path: str):
     return extract_complete(file_path)["datapoints_df"]
 
 if __name__ == "__main__":
-    extract_complete("test.csv")
+    print(extract_complete("data.txt"))

@@ -78,7 +78,7 @@ def extract_simple(file_path: str, normalize = False, split = False):
                     else:
                         line[i] = float(line[i])
 
-                    data_to_insert.append(line)
+                data_to_insert.append(line)
             extracted_df_list.append(pd.DataFrame(data_to_insert, columns=header_list))
 
         #Normalizzazione se richiesta

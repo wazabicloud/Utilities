@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import tkinter as tk
 from tkinter import filedialog
+from scipy import integrate
 
 def CCDC_elab():
 
@@ -54,11 +55,13 @@ def CCDC_elab():
         chg_df = df[df[curr] > 0]
         dchg_df = df[df[curr] < 0]
 
-        chg_cap = np.abs(np.trapz(chg_df[curr], chg_df[time]) / 3600)
-        dchg_cap = np.abs(np.trapz(dchg_df[curr], dchg_df[time]) / 3600)
+        print(type(df.loc[0, "Step name"]))
 
-        chg_energy = np.abs(np.trapz(chg_df[power], chg_df[time]) / 3600)
-        dchg_energy = np.abs(np.trapz(dchg_df[power], dchg_df[time]) / 3600)
+        chg_cap = np.abs(integrate.simpson(chg_df[curr], chg_df[time]) / 3600)
+        dchg_cap = np.abs(integrate.simpson(dchg_df[curr], dchg_df[time]) / 3600)
+
+        chg_energy = np.abs(integrate.simpson(chg_df[power], chg_df[time]) / 3600)
+        dchg_energy = np.abs(integrate.simpson(dchg_df[power], dchg_df[time]) / 3600)
 
         chg_power = chg_df[power].mean()
         dchg_power = dchg_df[power].mean()

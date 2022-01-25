@@ -55,8 +55,6 @@ def CCDC_elab():
         chg_df = df[df[curr] > 0]
         dchg_df = df[df[curr] < 0]
 
-        print(type(df.loc[0, "Step name"]))
-
         chg_cap = np.abs(integrate.simpson(chg_df[curr], chg_df[time]) / 3600)
         dchg_cap = np.abs(integrate.simpson(dchg_df[curr], dchg_df[time]) / 3600)
 

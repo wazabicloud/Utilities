@@ -41,9 +41,9 @@ def Extract():
                 else:
                     os.makedirs(path_to_check)
 
-            extracted_data["cycles_df"].to_csv(os.path.join(cycle_path, filename))
-            extracted_data["steps_df"].to_csv(os.path.join(steps_path, filename))
-            extracted_data["datapoints_df"].to_csv(os.path.join(data_path, filename))
+            extracted_data["cycles_df"].to_csv(os.path.join(cycle_path, filename), index = False)
+            extracted_data["steps_df"].to_csv(os.path.join(steps_path, filename), index = False)
+            extracted_data["datapoints_df"].to_csv(os.path.join(data_path, filename), index = False)
 
             print(f"{filename} done!")
 

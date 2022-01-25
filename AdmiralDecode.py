@@ -1,6 +1,6 @@
 import pandas as pd
 
-def extract_simple(file_path: str, normalize=False):
+def extract_simple(file_path: str, normalize = False, split = False):
     """
     Extracts data from a single file and organizes it
     according to the different techniques used.
@@ -32,42 +32,54 @@ def extract_simple(file_path: str, normalize=False):
 
         #Estrazione header per dataframe
         header_list = lines_list[0]
-
-        #Divisione delle varie prove in dataframes
-
         extracted_df_list = list()
-        data_to_insert = list()
-        current_step_number = 0
 
-        for line in lines_list[1:]:
+        if split == True:
+            #Divisione delle varie prove in dataframes
+            data_to_insert = list()
+            current_step_number = 0
 
-            #Controllo se lo step number cambia
+            for line in lines_list[1:]:
 
-            step_num = line[0].split("_")[0]
+                #Controllo se lo step number cambia
 
-            #Se cambia inserisco i dati presenti in data_to_insert in un dataframe e prima di ricominciare svuoto la lista
-            if step_num != current_step_number:
+                step_num = line[0].split("_")[0]
 
-                current_step_number = step_num
+                #Se cambia inserisco i dati presenti in data_to_insert in un dataframe e prima di ricominciare svuoto la lista
+                if step_num != current_step_number:
 
-                extracted_df_list.append(pd.DataFrame(data_to_insert, columns=header_list))
+                    current_step_number = step_num
 
-                data_to_insert = []
+                    extracted_df_list.append(pd.DataFrame(data_to_insert, columns=header_list))
 
-            #Converto tutti in float e inserisco
-            for i in range(len(line)):
-                if i < 2:
-                    continue
-                else:
-                    line[i] = float(line[i])
+                    data_to_insert = []
 
-            data_to_insert.append(line)
+                #Converto tutti in float e inserisco
+                for i in range(len(line)):
+                    if i < 2:
+                        continue
+                    else:
+                        line[i] = float(line[i])
 
-        #Alla fine del loop devo comunque aggiungere ciò che rimane in un ultimo
-        #dataframe e cancellare il primo elemento della lista che è vuoto
+                data_to_insert.append(line)
 
-        extracted_df_list.append(pd.DataFrame(data_to_insert, columns=header_list))
-        del extracted_df_list[0]
+            #Alla fine del loop devo comunque aggiungere ciò che rimane in un ultimo
+            #dataframe e cancellare il primo elemento della lista che è vuoto
+
+            extracted_df_list.append(pd.DataFrame(data_to_insert, columns=header_list))
+            del extracted_df_list[0]
+        else:
+            data_to_insert = list()
+
+            for line in lines_list[1:]:
+                for i in range(len(line)):
+                    if i < 2:
+                        continue
+                    else:
+                        line[i] = float(line[i])
+
+                    data_to_insert.append(line)
+            extracted_df_list.append(pd.DataFrame(data_to_insert, columns=header_list))
 
         #Normalizzazione se richiesta
         if normalize == True:

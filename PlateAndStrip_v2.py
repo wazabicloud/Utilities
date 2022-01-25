@@ -4,6 +4,7 @@ import tkinter as tk
 import numpy as np
 from tkinter import filedialog
 import pandas as pd
+import os
 
 def PlateAndStrip():
     print("Choose files to analyse:")
@@ -61,7 +62,12 @@ def PlateAndStrip():
                 case _:
                     print("\nCommand not recognized!")
 
+        results_dict = dict()
+
         for file in file_list:
+            filename = os.path.basename(file)
+            print(f"Analysis of {filename}...")
+
             df = NewareDecode.extract_datapoints(file)
 
             pot = df.columns[4]
@@ -71,29 +77,45 @@ def PlateAndStrip():
 
             final_df = pd.DataFrame(columns = [time, curr, pot])
 
-            match extract_mode:
-                # Estrazione normale
-                case "1":
-                    final_df = df[[time, curr, pot]]
+            try:
+                match extract_mode:
+                    # Estrazione normale
+                    case "1":
+                        final_df = df[[time, curr, pot]]
+                    
+                    # Uno ogni n
+                    case "2":
+                        final_df = df[df.index % n == 0][[time, curr, pot]]
+
+                    # Solo massimi e minimi
+                    case "3":
+                        for cycle in df[id].unique():
+                            sub_df = df[df[id] == cycle]
+
+                            if sub_df[curr].mean() > 0:
+                                extremes = sub_df.iloc[argrelextrema(sub_df[pot].values, np.greater_equal, order=n)[0]][[time, curr, pot]]
+                                extremes.sort_values(by=[time], inplace=True, ignore_index=True)
+                            else:
+                                extremes = sub_df.iloc[argrelextrema(sub_df[pot].values, np.less_equal, order=n)[0]][[time, curr, pot]]
+                                extremes.sort_values(by=[time], inplace=True, ignore_index=True)
+
+                            final_df = pd.concat([final_df, extremes.iloc[[0]]], ignore_index = True)
                 
-                # Uno ogni n
-                case "2":
-                    final_df = df[df.index % n == 0][[time, curr, pot]]
+                results_dict[filename] = final_df
+                print(f"Done!")
 
-                # Solo massimi e minimi
-                case "3":
-                    for cycle in df[id].unique():
-                        sub_df = df[df[id] == cycle]
+            except:
+                print(f"Error encountered while converting {filename}")
 
-                        if sub_df[curr].mean() > 0:
-                            extremes = sub_df.iloc[argrelextrema(sub_df[pot].values, np.greater_equal, order=n)[0]][[time, curr, pot]]
-                            extremes.sort_values(by=[time], inplace=True, ignore_index=True)
-                        else:
-                            extremes = sub_df.iloc[argrelextrema(sub_df[pot].values, np.less_equal, order=n)[0]][[time, curr, pot]]
-                            extremes.sort_values(by=[time], inplace=True, ignore_index=True)
+        if len(results_dict) > 0:
+            for file in file_list:
+                filename = os.path.basename(file)
 
-                        final_df = pd.concat([final_df, extremes.iloc[[0]]], ignore_index = True)
+                if filename in results_dict:
+                    dir = os.path.dirname(file)
+                    new_name = f"P&S_{filename[:-4]}.csv"
+                    new_path = os.path.join(dir, new_name)
+                    results_dict[filename].to_csv(new_path, index=False)
 
-
-
-PlateAndStrip()
+if __name__ == "__main__":
+    PlateAndStrip()

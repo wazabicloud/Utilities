@@ -3,6 +3,7 @@ import tkinter as tk
 import NewareExtractor
 import EISconverter
 import AreaCV
+import PlateAndStrip_v2
 
 # Elenco dei comandi
 commands_dict = {
@@ -35,6 +36,8 @@ if __name__ == "__main__":
                 EISconverter.Convert()
             case "3":
                 AreaCV.GetArea()
+            case "4":
+                PlateAndStrip_v2.PlateAndStrip()
             case "H":
                 print("Help message.")
             case "Q":

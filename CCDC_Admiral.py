@@ -37,6 +37,10 @@ def CCDC_elab():
     root.focus_force()
     file_list = filedialog.askopenfilenames(parent = root, title="Choose CV files", filetypes = [("CSV files", ".csv")])
 
+    if len(file_list) == 0:
+        print("No file was selected!")
+        return
+
     for file in file_list:
         try:
             df_list = AdmiralDecode.extract_simple(file, normalize = True, split = True)

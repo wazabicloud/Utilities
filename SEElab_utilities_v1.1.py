@@ -5,6 +5,7 @@ import EISconverter
 import AreaCV
 import PlateAndStrip_v2
 import CCDC_Admiral
+import sys
 
 # Elenco dei comandi
 commands_dict = {
@@ -58,6 +59,6 @@ if __name__ == "__main__":
                 PrintHelpMsg()
             case "q":
                 print("Bye!")
-                quit()
+                sys.exit()
             case _:
                 print("\nCommand not recognized!")

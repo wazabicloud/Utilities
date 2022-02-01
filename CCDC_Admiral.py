@@ -39,44 +39,50 @@ def CCDC_elab():
 
     for file in file_list:
         try:
-            df = AdmiralDecode.extract_simple(file, normalize = True, split = False)[0]
+            df_list = AdmiralDecode.extract_simple(file, normalize = True, split = True)
 
-            time = df.columns[2]
-            work_v = df.columns[3]
-            curr = df.columns[5]
-            counter_v = df.columns[8]
-            pot = "Voltage (V)"
-            power = "Power (W)"
+            for i, temp_df in enumerate(df_list):
+                if i % 2 == 1 or i == len(df_list):
+                    continue
 
-            df[pot] = df[work_v] - df[counter_v]
-            df[curr] = df[curr] * 1000
+                df = pd.concat([df_list[i], df_list[i + 1]], ignore_index = True)
 
-            df[power] = df[pot].abs() * df[curr].abs()
+                time = df.columns[2]
+                work_v = df.columns[3]
+                curr = df.columns[5]
+                counter_v = df.columns[8]
+                pot = "Voltage (V)"
+                power = "Power (W)"
 
-            chg_df = df[df[curr] > 0]
-            dchg_df = df[df[curr] < 0]
+                df[pot] = df[work_v] - df[counter_v]
+                df[curr] = df[curr] * 1000
 
-            chg_cap = np.abs(integrate.simpson(chg_df[curr], chg_df[time]) / 3600)
-            dchg_cap = np.abs(integrate.simpson(dchg_df[curr], dchg_df[time]) / 3600)
+                df[power] = df[pot].abs() * df[curr].abs()
 
-            chg_energy = np.abs(integrate.simpson(chg_df[power], chg_df[time]) / 3600)
-            dchg_energy = np.abs(integrate.simpson(dchg_df[power], dchg_df[time]) / 3600)
+                chg_df = df[df[curr] > 0]
+                dchg_df = df[df[curr] < 0]
 
-            chg_power = chg_df[power].mean()
-            dchg_power = dchg_df[power].mean()
+                chg_cap = np.abs(integrate.simpson(chg_df[curr], chg_df[time]) / 3600)
+                dchg_cap = np.abs(integrate.simpson(dchg_df[curr], dchg_df[time]) / 3600)
 
-            chg_avg_pot = np.abs(chg_df[pot].mean())
-            dchg_avg_pot = np.abs(dchg_df[pot].mean())
+                chg_energy = np.abs(integrate.simpson(chg_df[power], chg_df[time]) / 3600)
+                dchg_energy = np.abs(integrate.simpson(dchg_df[power], dchg_df[time]) / 3600)
 
-            chg_avg_curr = chg_df[curr].mean()
-            dchg_avg_curr = dchg_df[curr].mean()
+                chg_power = chg_df[power].mean()
+                dchg_power = dchg_df[power].mean()
 
-            begin_time = df[time].min()
+                chg_avg_pot = np.abs(chg_df[pot].mean())
+                dchg_avg_pot = np.abs(dchg_df[pot].mean())
 
-            coul_eff = dchg_cap / chg_cap * 100
-            ener_eff = dchg_energy / chg_energy * 100
+                chg_avg_curr = chg_df[curr].mean()
+                dchg_avg_curr = dchg_df[curr].mean()
 
-            final_df.loc[len(final_df)] = [chg_cap, dchg_cap, chg_energy, dchg_energy, coul_eff, ener_eff, chg_power, dchg_power, chg_avg_curr, dchg_avg_curr, chg_avg_pot, dchg_avg_pot, begin_time]
+                begin_time = df[time].min()
+
+                coul_eff = dchg_cap / chg_cap * 100
+                ener_eff = dchg_energy / chg_energy * 100
+                
+                final_df.loc[len(final_df)] = [chg_cap, dchg_cap, chg_energy, dchg_energy, coul_eff, ener_eff, chg_power, dchg_power, chg_avg_curr, dchg_avg_curr, chg_avg_pot, dchg_avg_pot, begin_time]
 
         except:
             filename = os.path.basename(file)

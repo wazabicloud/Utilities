@@ -29,7 +29,7 @@ def PrintHelpMsg():
 
     EIS to Bio-logic: A tool to convert EIS files obtained from Admiral potentiostats to a file that can be read by EC-lab. It creates .txt files that can be imported into EC-lab, then when they are imported, EC-lab automatically creates a .mpr file in the same directory.
 
-    Supercap analysis: A tool to perform quantitative analysis of super capacitors cyclic voltammograms. Currently only Admiral files are supported.
+    Supercap analysis: A tool to perform quantitative analysis of super capacitors cyclic voltammograms. By default it will consider only the last cycle of the file. Currently only Admiral files are supported.
 
     Plate and Strip: A tool to analyse plate and strip curves obtained from Neware files. It only accepts .csv and .txt files extracted with "General report".
 

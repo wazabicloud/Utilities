@@ -25,27 +25,30 @@ def Extract():
 
             dir = os.path.dirname(file)
             filename = os.path.basename(file)
+            print(f"Extracting {filename}")
 
-            cycle_path = os.path.join(dir, "cycles")
-            steps_path = os.path.join(dir, "steps")
-            data_path = os.path.join(dir, "datapoints")
+            try:
+                cycle_path = os.path.join(dir, "cycles")
+                steps_path = os.path.join(dir, "steps")
+                data_path = os.path.join(dir, "datapoints")
 
-            print("Extracting " + filename)
+                with open(file, "r") as handle:
+                    extracted_data = NewareDecode.extract_complete(file)
 
-            with open(file, "r") as handle:
-                extracted_data = NewareDecode.extract_complete(file)
+                for path_to_check in [cycle_path, steps_path, data_path]:
+                    if os.path.exists(path_to_check):
+                        continue
+                    else:
+                        os.makedirs(path_to_check)
 
-            for path_to_check in [cycle_path, steps_path, data_path]:
-                if os.path.exists(path_to_check):
-                    continue
-                else:
-                    os.makedirs(path_to_check)
+                extracted_data["cycles_df"].to_csv(os.path.join(cycle_path, filename), index = False)
+                extracted_data["steps_df"].to_csv(os.path.join(steps_path, filename), index = False)
+                extracted_data["datapoints_df"].to_csv(os.path.join(data_path, filename), index = False)
 
-            extracted_data["cycles_df"].to_csv(os.path.join(cycle_path, filename), index = False)
-            extracted_data["steps_df"].to_csv(os.path.join(steps_path, filename), index = False)
-            extracted_data["datapoints_df"].to_csv(os.path.join(data_path, filename), index = False)
-
-            print(f"{filename} done!")
+                print(f"{filename} done!")
+            
+            except:
+                print(f"Error encountered while extracting {filename}.")
 
 if __name__ == "__main__":
     Extract()

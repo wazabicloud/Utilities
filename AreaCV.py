@@ -83,16 +83,19 @@ def GetArea():
             except:
                 print("Failed!")
 
-    print("Choose report destination:")
-
-    output_file = filedialog.asksaveasfile(title = "Save analysis result as:",mode='w', defaultextension=".csv", filetypes = [("CSV files", ".csv")])
-
-    if output_file == None:
-        print("Invalid save destination!")
+    if len(report.split("\n")) == 1:
+        print("The final report is empty! Please check that you have selected the correct files.")
     else:
-        output_file.write(report)
-        output_file.close()
-        print(f"Saved as {output_file.name}")
+        print("Choose report destination:")
+
+        output_file = filedialog.asksaveasfile(title = "Save analysis result as:",mode='w', defaultextension=".csv", filetypes = [("CSV files", ".csv")])
+
+        if output_file == None:
+            print("Invalid save destination!")
+        else:
+            output_file.write(report)
+            output_file.close()
+            print(f"Saved as {output_file.name}")
 
 if __name__ == "__main__":
     GetArea()

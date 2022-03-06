@@ -43,7 +43,7 @@ def extract_simple(file_path: str, normalize = False, split = False):
 
                 #Controllo se lo step number cambia
 
-                step_num = line[0].split("_")[0]
+                step_num = line[0]
 
                 #Se cambia inserisco i dati presenti in data_to_insert in un dataframe e prima di ricominciare svuoto la lista
                 if step_num != current_step_number:
